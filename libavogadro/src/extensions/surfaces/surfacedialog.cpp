@@ -78,7 +78,7 @@ namespace Avogadro {
     }
     // Now add the MO option to the surface and color combos
     m_surfaceTypes.clear();
-    m_surfaceTypes << Cube::VdW << Cube::ESP << Cube::ElectronDensity << Cube::MO;
+    m_surfaceTypes << Cube::VdW << Cube::ESP << Cube::ElectronDensity << Cube::SpinDensity << Cube::MO;
     m_colorTypes.clear();
     m_colorTypes << Cube::None << Cube::ESP << Cube::ElectronDensity << Cube::MO;
     updateCubes();
@@ -246,6 +246,8 @@ namespace Avogadro {
                   "Electrostatic potential surface type");
       case Cube::ElectronDensity:
         return tr("Electron Density", "Electron density surface type");
+      case Cube::SpinDensity:
+         return tr("Spin Density", "Spin density surface type");
       case Cube::MO:
         return tr("Molecular Orbital", "Molecular orbital surface type");
       default:
@@ -259,8 +261,10 @@ namespace Avogadro {
 
     // Reset the combos, then rebuild them
     ui.surfaceCombo->clear();
-    foreach (const Cube::Type &type, m_surfaceTypes)
-      ui.surfaceCombo->addItem(cubeText(type));
+    foreach (const Cube::Type &type, m_surfaceTypes){
+      qDebug() << "cube:" << cubeText(type);
+      ui.surfaceCombo->addItem(cubeText(type));}
+
     ui.colorByCombo->clear();
     foreach (const Cube::Type &type, m_colorTypes)
       ui.colorByCombo->addItem(cubeText(type));
@@ -338,6 +342,9 @@ namespace Avogadro {
           break;
         case Cube::ElectronDensity:
           isoValue = 0.1;
+          break;
+        case Cube::SpinDensity:
+          isoValue = 0.01;
           break;
         case Cube::MO:
           isoValue = 0.02;

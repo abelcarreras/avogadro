@@ -98,7 +98,7 @@ void GaussianFchk::processLine()
   else if (key == "P(S=P) Contraction coefficients")
     m_csp = readArrayD(list.at(2).toInt(), 16);
   else if (key == "Alpha Orbital Energies") {
-    m_orbitalEnergy = readArrayD(list.at(2).toInt(), 16);
+   // m_orbitalEnergy = readArrayD(list.at(2).toInt(), 16);
     qDebug() << "MO energies, n =" << m_orbitalEnergy.size();
   }
   else if (key == "Alpha MO coefficients") {
@@ -113,6 +113,12 @@ void GaussianFchk::processLine()
       qDebug() << "SCF density matrix read in" << m_density.rows();
     else
       qDebug() << "Error reading in the SCF density matrix.";
+  }
+  else if (key == "Fractional occupation density") {
+    if (readSpinDensityMatrix(list.at(2).toInt(), 16))
+        qDebug() << "Spin SCF density matrix read in" << m_sdensity.rows();
+    else
+      qDebug() << "Error reading in the SCF spin density matrix.";
   }
 }
 
@@ -207,6 +213,8 @@ void GaussianFchk::load(GaussianSet* basis)
       qDebug() << "Error - no MO coefficients read in.";
     if (m_density.rows())
       basis->setDensityMatrix(m_density);
+    if (m_density.rows())
+      basis->setSpinDensityMatrix(m_sdensity);
   }
 }
 
@@ -374,6 +382,84 @@ bool GaussianFchk::readDensityMatrix(unsigned int n, int width)
   }
   return true;
 }
+
+bool GaussianFchk::readSpinDensityMatrix(unsigned int n, int width)
+{
+  // This function reads in the lower triangular density matrix
+  m_sdensity.resize(m_numBasisFunctions, m_numBasisFunctions);
+  unsigned int cnt = 0;
+  unsigned int i = 0, j = 0;
+  unsigned int f = 1;
+  bool ok = false;
+  while (cnt < n) {
+    if (m_in->atEnd()) {
+      qDebug() << "GaussianFchk::readDensityMatrix could not read all elements"
+               << n << "expected" << cnt << "parsed.";
+      return false;
+    }
+    QString line = m_in->readLine();
+    if (line.isEmpty())
+      return false;
+
+    if (width == 0) { // we can split by spaces
+      QStringList list = line.split(' ', QString::SkipEmptyParts);
+      for (int k = 0; k < list.size(); ++k) {
+        if (cnt >= n) {
+          qDebug() << "Too many variables read in. File may be inconsistent."
+                   << cnt << "of" << n;
+          return false;
+        }
+        // Read in lower half matrix
+        m_sdensity(i, j) = list.at(k).toDouble(&ok);
+        if (ok) { // Valid double converted, carry on
+          ++j; ++cnt;
+          if (j == f) {
+            // We need to move down to the next row and increment f - lower tri
+            j = 0;
+            ++f;
+            ++i;
+          }
+        }
+        else { // Invalid conversion of a string to double
+          qDebug() << "Warning: problem converting string to double:"
+                   << list.at(k) << "\nIn GaussianFchk::readDensityMatrix.";
+          return false;
+        }
+      }
+    }
+    else { // Q-Chem files use 16-character fields
+      int maxColumns = 80 / width;
+      for (int c = 0; c < maxColumns; ++c) {
+        QString substring = line.mid(c * width, width);
+        if (substring.length() != width)
+          break;
+        else if (cnt >= n) {
+          qDebug() << "Too many variables read in. File may be inconsistent."
+                   << cnt << "of" << n;
+          return false;
+        }
+        // Read in lower half matrix
+        m_sdensity(i, j) = substring.toDouble(&ok);
+        if (ok) { // Valid double converted, carry on
+          ++j; ++cnt;
+          if (j == f) {
+            // We need to move down to the next row and increment f - lower tri
+            j = 0;
+            ++f;
+            ++i;
+          }
+        }
+        else { // Invalid conversion of a string to double
+          qDebug() << "Warning: problem converting string to double:"
+                   << substring << "\nIn GaussianFchk::readDensityMatrix.";
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 
 void GaussianFchk::outputAll()
 {

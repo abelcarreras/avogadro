@@ -115,6 +115,11 @@ public:
   bool setDensityMatrix(const Eigen::MatrixXd &m);
 
   /**
+   * Set the SCF spin density matrix for the GaussianSet.
+   */
+  bool setSpinDensityMatrix(const Eigen::MatrixXd &m);
+
+  /**
    * Debug routine, outputs all of the data in the GaussianSet.
    */
   void outputAll();
@@ -186,6 +191,7 @@ private:
   std::vector<double> m_gtoCN;             //! The GTO contraction coefficient (normalized)
   Eigen::MatrixXd m_moMatrix;              //! MO coefficient matrix
   Eigen::MatrixXd m_density;               //! Density matrix
+  Eigen::MatrixXd m_sdensity;              //! Spin Density matrix
 
   unsigned int m_numMOs;    //! The number of GTOs
   unsigned int m_numAtoms;  //! Total number of atoms in the basis set

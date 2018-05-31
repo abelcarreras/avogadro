@@ -165,6 +165,13 @@ bool GaussianSet::setDensityMatrix(const Eigen::MatrixXd &m)
   return true;
 }
 
+bool GaussianSet::setSpinDensityMatrix(const Eigen::MatrixXd &m)
+{
+    m_sdensity.resize(m.rows(), m.cols());
+    m_sdensity = m;
+    return true;
+}
+
 bool GaussianSet::calculateCubeMO(Cube *cube, unsigned int state)
 {
   // Set up the calculation and ideally use the new QtConcurrent code to

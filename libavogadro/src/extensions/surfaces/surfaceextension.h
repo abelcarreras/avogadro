@@ -108,6 +108,9 @@ namespace Avogadro
     //! Calculate electron density cube
     void calculateElectronDensity(OpenQube::Cube *cube);
 
+    //! Calculate spin density cube
+    void calculateSpinDensity(OpenQube::Cube *cube);
+
     //! Calculate a mesh isosurface for the given cube
     void calculateMesh(Cube *cube, double isoValue);
 

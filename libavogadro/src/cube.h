@@ -64,6 +64,7 @@ namespace Avogadro {
       VdW,
       ESP,
       ElectronDensity,
+      SpinDensity,
       MO,
       FromFile,
       None

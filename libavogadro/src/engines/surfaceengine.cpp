@@ -247,6 +247,12 @@ namespace Avogadro {
         m_settingsWidget->orbital1Combo->addItem(comboText.arg(mesh->isoValue()));
         m_meshes.push_back(mesh->id());
       }
+      else if (cubeType == Cube::SpinDensity) {
+          comboText = tr("Spin density, isosurface = %L1",
+                         "Spin density isosurface with a cutoff of %1");
+          m_settingsWidget->orbital1Combo->addItem(comboText.arg(mesh->isoValue()));
+          m_meshes.push_back(mesh->id());
+      }
       else if (cubeType == Cube::MO) {
         if (mesh->isoValue() > 0.0) {
           comboText = tr("%1, isosurface = %L2",

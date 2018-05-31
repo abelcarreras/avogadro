@@ -42,6 +42,7 @@ private:
   std::vector<int> readArrayI(unsigned int n);
   std::vector<double> readArrayD(unsigned int n, int width = 0);
   bool readDensityMatrix(unsigned int n, int width = 0);
+  bool readSpinDensityMatrix(unsigned int n, int width = 0);
 
   int m_electrons;
   unsigned int m_numBasisFunctions;
@@ -56,6 +57,8 @@ private:
   std::vector<double> m_orbitalEnergy;
   std::vector<double> m_MOcoeffs;
   Eigen::MatrixXd m_density;     /// Total density matrix
+  Eigen::MatrixXd m_sdensity;     /// Total spin density matrix
+
 };
 
 } // End namespace openqube

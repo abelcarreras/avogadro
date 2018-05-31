@@ -388,6 +388,41 @@ namespace Avogadro
     m_surfaceDialog->enableCalculation(false);
   }
 
+  void SurfaceExtension::calculateSpinDensity(OpenQube::Cube *cube)
+  {
+    qDebug("TEST SPIN");
+    if (!m_basis)
+        return;
+
+    m_basis->calculateCubeDensity(cube);
+
+    // Set up a progress dialog
+    if (!m_progress) {
+        m_progress = new QProgressDialog(m_surfaceDialog);
+        m_progress->setCancelButtonText(tr("Abort Calculation"));
+        m_progress->setWindowModality(Qt::NonModal);
+    }
+
+    // Set up the progress bar
+    m_progress->setWindowTitle(tr("Calculating Spin Density"));
+    m_progress->setRange(m_basis->watcher().progressMinimum(),
+                         m_basis->watcher().progressMaximum());
+    m_progress->setValue(m_basis->watcher().progressValue());
+    m_progress->show();
+
+    // Connect the signals and slots
+    connect(&m_basis->watcher(), SIGNAL(progressValueChanged(int)),
+            m_progress, SLOT(setValue(int)));
+    connect(&m_basis->watcher(), SIGNAL(progressRangeChanged(int, int)),
+            m_progress, SLOT(setRange(int, int)));
+    connect(m_progress, SIGNAL(canceled()),
+            this, SLOT(slaterCanceled()));
+    connect(&m_basis->watcher(), SIGNAL(finished()),
+            this, SLOT(calculateDone()));
+    m_surfaceDialog->enableCalculation(false);
+  }
+
+
   void SurfaceExtension::calculateMesh(Cube *cube, double isoValue)
   {
     qDebug() << "calculateMesh called" << isoValue << cube;
@@ -482,6 +517,37 @@ namespace Avogadro
       case Cube::ESP:
         // FIXME To be implemented - calculate an ESP cube
         return;
+      case Cube::SpinDensity: {
+        qDebug() << "m_cubes.size() =" << m_cubes.size();
+        Cube *cube = m_molecule->cubeById(m_cubes[2]);
+        if (!cube) { // We need a new cube
+            cube = newCube();
+            cube->setName(tr("Spin Density"));
+            cube->setCubeType(Cube::SpinDensity);
+            m_cubes[2] = cube->id();
+            m_cube = cube;
+            m_qube = newQube();
+            calculateSpinDensity(m_qube);
+            calculateCube = true;
+            return;
+        }
+            // There is a valid cube - check the resolution
+        else if (fabs(cube->spacing().x() - m_surfaceDialog->stepSize()) > 0.02) {
+            // Resize the cube and recalculate at the desired resolution
+            cube->setLimits(m_molecule, m_surfaceDialog->stepSize(), 2.5);
+            m_cube = cube;
+            m_qube = newQube();
+            calculateSpinDensity(m_qube);
+            calculateCube = true;
+            return;
+        }
+        else {
+            // The cube is valid, the resolution is valid. Return cube
+            calculateCube = false;
+            m_cube = cube;
+            return;
+        }
+      }
       case Cube::ElectronDensity: {
         qDebug() << "m_cubes.size() =" << m_cubes.size();
         Cube *cube = m_molecule->cubeById(m_cubes[2]);
@@ -492,7 +558,7 @@ namespace Avogadro
           m_cubes[2] = cube->id();
           m_cube = cube;
           m_qube = newQube();
-          calculateElectronDensity(m_qube);
+            calculateSpinDensity(m_qube);
           calculateCube = true;
           return;
         }
@@ -502,7 +568,7 @@ namespace Avogadro
           cube->setLimits(m_molecule, m_surfaceDialog->stepSize(), 2.5);
           m_cube = cube;
           m_qube = newQube();
-          calculateElectronDensity(m_qube);
+            calculateSpinDensity(m_qube);
           calculateCube = true;
           return;
         }
@@ -599,7 +665,8 @@ namespace Avogadro
         m_calculationPhase = 1;
         // Disconnect the signals and slots that we are now finished with
         if (m_surfaceDialog->cubeType() == Cube::MO ||
-            m_surfaceDialog->cubeType() == Cube::ElectronDensity) {
+            m_surfaceDialog->cubeType() == Cube::ElectronDensity ||
+            m_surfaceDialog->cubeType() == Cube::SpinDensity) {
           if (m_basis)
             disconnect(&m_basis->watcher(), 0, this, 0);
           if (m_qube) {
