@@ -394,7 +394,7 @@ namespace Avogadro
     if (!m_basis)
         return;
 
-    m_basis->calculateCubeDensity(cube);
+    m_basis->calculateCubeSpinDensity(cube);
 
     // Set up a progress dialog
     if (!m_progress) {
@@ -558,7 +558,7 @@ namespace Avogadro
           m_cubes[2] = cube->id();
           m_cube = cube;
           m_qube = newQube();
-            calculateSpinDensity(m_qube);
+          calculateElectronDensity(m_qube);
           calculateCube = true;
           return;
         }
@@ -568,7 +568,7 @@ namespace Avogadro
           cube->setLimits(m_molecule, m_surfaceDialog->stepSize(), 2.5);
           m_cube = cube;
           m_qube = newQube();
-            calculateSpinDensity(m_qube);
+          calculateElectronDensity(m_qube);
           calculateCube = true;
           return;
         }

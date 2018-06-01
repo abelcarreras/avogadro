@@ -39,4 +39,12 @@ bool BasisSet::blockingCalculateCubeDensity(Cube *cube)
   return true;
 }
 
+bool BasisSet::blockingCalculateCubeSpinDensity(Cube *cube)
+{
+    if (!this->calculateCubeSpinDensity(cube))
+        return false;
+    this->watcher().waitForFinished();
+    return true;
+}
+
 }

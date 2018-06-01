@@ -249,6 +249,48 @@ bool GaussianSet::calculateCubeDensity(Cube *cube)
   return true;
 }
 
+bool GaussianSet::calculateCubeSpinDensity(Cube *cube)
+{
+    if (m_sdensity.size() == 0) {
+        qDebug() << "Cannot calculate density -- density matrix not set.";
+        return false;
+    }
+
+    // FIXME Still not working, committed so others could see current state.
+    // - seems to work for Orca data
+
+    // Must be called before calculations begin - use different init for Orca written data
+    if (!m_useOrcaNorm) {
+        initCalculation();
+    } else {
+        initCalculationForOrca();
+    }
+
+    // Set up the points we want to calculate the density at
+    m_gaussianShells = new QVector<GaussianShell>(cube->data()->size());
+
+    for (int i = 0; i < m_gaussianShells->size(); ++i) {
+        (*m_gaussianShells)[i].set = this;
+        (*m_gaussianShells)[i].tCube = cube;
+        (*m_gaussianShells)[i].pos = i;
+    }
+
+    // Lock the cube until we are done.
+    cube->lock()->lockForWrite();
+
+    // Watch for the future
+    connect(&m_watcher, SIGNAL(finished()), this, SLOT(calculationComplete()));
+
+    // The main part of the mapped reduced function...
+    m_future = QtConcurrent::map(*m_gaussianShells, GaussianSet::processSpinDensity);
+    // Connect our watcher to our future
+    m_watcher.setFuture(m_future);
+
+    return true;
+}
+
+
+
 BasisSet * GaussianSet::clone()
 {
   GaussianSet *result = new GaussianSet();
@@ -949,6 +991,106 @@ void GaussianSet::processDensity(GaussianShell &shell)
 
   // Set the value
   shell.tCube->setValue(shell.pos, rho);
+}
+
+void GaussianSet::processSpinDensity(GaussianShell &shell)
+{
+    GaussianSet *set = shell.set;
+    unsigned int atomsSize = set->m_numAtoms;
+    unsigned int basisSize = set->m_symmetry.size();
+    unsigned int matrixSize = set->m_sdensity.rows();
+    std::vector<int> &basis = set->m_symmetry;
+    vector<Vector3d> deltas;
+    vector<double> dr2;
+    deltas.reserve(atomsSize);
+    dr2.reserve(atomsSize);
+
+    // Calculate our position
+    Vector3d pos = shell.tCube->position(shell.pos) * ANGSTROM_TO_BOHR;
+    // Calculate the deltas for the position
+    for (unsigned int i = 0; i < atomsSize; ++i) {
+        deltas.push_back(pos - set->m_molecule.atomPos(i));
+        dr2.push_back(deltas[i].squaredNorm());
+    }
+
+    // Calculate the basis set values at this point
+    MatrixXd values(matrixSize, 1);
+    if (!set->m_useOrcaNorm) {
+        for (unsigned int i = 0; i < basisSize; ++i) {
+            unsigned int cAtom = set->m_atomIndices[i];
+            switch(basis[i]) {
+                case S:
+                    pointS(shell.set, dr2[cAtom], i, values);
+                    break;
+                case P:
+                    pointP(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case D:
+                    pointD(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case D5:
+                    pointD5(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case F:
+                    pointF(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case F7:
+                    pointF7(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                default:
+                    qDebug() << " unhandled function !!!! ";
+                    // Not handled - return a zero contribution
+                    ;
+            }
+        }
+    } else {
+        for (unsigned int i = 0; i < basisSize; ++i) {
+            unsigned int cAtom = set->m_atomIndices[i];
+            switch(basis[i]) {
+                case S:
+                    pointS(shell.set, dr2[cAtom], i, values);
+                    break;
+                case P:
+                    pointP(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case D5:
+                    pointOrcaD5(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case F7:
+                    pointOrcaF7(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case G9:
+                    pointOrcaG9(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case H11:
+                    pointOrcaH11(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                case I13:
+                    pointOrcaI13(shell.set, deltas[cAtom], dr2[cAtom], i, values);
+                    break;
+                default:
+                    qDebug() << " unhandled function !!!! ";
+                    // Not handled - return a zero contribution
+                    ;
+            }
+        }
+    }
+
+    // Now calculate the value of the density at this point in space
+    double rho = 0.0;
+    for (unsigned int i = 0; i < matrixSize; ++i) {
+        // Calculate the off-diagonal parts of the matrix
+        for (unsigned int j = 0; j < i; ++j) {
+            rho += 2.0 * set->m_sdensity.coeffRef(i, j)
+                   * (values.coeffRef(i, 0) * values.coeffRef(j, 0));
+        }
+        // Now calculate the matrix diagonal
+        rho += set->m_sdensity.coeffRef(i, i)
+               * (values.coeffRef(i, 0) * values.coeffRef(i, 0));
+    }
+
+    // Set the value
+    shell.tCube->setValue(shell.pos, rho);
 }
 
 inline double GaussianSet::pointS(GaussianSet *set, unsigned int moIndex,

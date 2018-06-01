@@ -117,9 +117,9 @@ int main(int argc, char *argv[])
     case 1:
       m_basis->blockingCalculateCubeMO(m_qube,orbID);
       break;
-    /*case 1:
+    case 2:
       m_basis->blockingCalculateCubeSpinDensity(m_qube);
-      break;*/
+      break;
     /*case 3:
       m_basis->blockingCalculateCubeAlphaMO(m_qube,orbID);
       break;

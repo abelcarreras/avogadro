@@ -157,6 +157,16 @@ public:
   bool calculateCubeDensity(Cube *cube);
 
   /**
+   * Calculate the spin density over the entire range of the supplied Cube.
+   * @param cube The cube to write the values of the MO into.
+   * @note This function starts a threaded calculation. Use watcher()
+   * to monitor progress.
+   * @sa blockingCalculateCubeDensity
+   * @return True if the calculation was successful.
+   */
+  bool calculateCubeSpinDensity(Cube *cube);
+
+  /**
    * When performing a calculation the QFutureWatcher is useful if you want
    * to update a progress bar.
    */
@@ -212,7 +222,9 @@ private:
   /// Re-entrant single point forms of the calculations
   static void processPoint(GaussianShell &shell);
   static void processDensity(GaussianShell &shell);
-  static double pointS(GaussianSet *set, unsigned int moIndex,
+  static void processSpinDensity(GaussianShell &shell);
+
+    static double pointS(GaussianSet *set, unsigned int moIndex,
                        double dr2, unsigned int indexMO);
   static double pointP(GaussianSet *set, unsigned int moIndex,
                        const Eigen::Vector3d &delta,

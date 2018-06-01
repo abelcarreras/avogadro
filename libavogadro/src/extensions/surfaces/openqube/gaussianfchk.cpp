@@ -101,6 +101,7 @@ void GaussianFchk::processLine()
    // m_orbitalEnergy = readArrayD(list.at(2).toInt(), 16);
     qDebug() << "MO energies, n =" << m_orbitalEnergy.size();
   }
+  //else if (key == "Alpha NATO coefficients") {
   else if (key == "Alpha MO coefficients") {
     m_MOcoeffs = readArrayD(list.at(2).toInt(), 16);
     if (static_cast<int>(m_MOcoeffs.size()) == list.at(2).toInt())
