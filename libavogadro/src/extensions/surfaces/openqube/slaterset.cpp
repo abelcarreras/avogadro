@@ -216,7 +216,40 @@ bool SlaterSet::calculateCubeSpinDensity(Cube *cube)
     return true;
 }
 
+bool SlaterSet::calculateCubeFODensity(Cube *cube)
+{
+    // Set up the calculation and ideally use the new QtConcurrent code to
+    // multithread the calculation...
+    if (!m_initialized)
+        initialize();
 
+    // It is more efficient to process each shell over the entire cube than it
+    // is to process each MO at each point in the cube. This is probably the best
+    // point at which to multithread too - QtConcurrent!
+    m_slaterShells.resize(cube->data()->size());
+
+    qDebug() << "Number of points for density:" << m_slaterShells.size();
+
+    for (int i = 0; i < m_slaterShells.size(); ++i) {
+        m_slaterShells[i].set = this;
+        m_slaterShells[i].cube = cube;
+        m_slaterShells[i].pos = i;
+        m_slaterShells[i].state = 0;
+    }
+
+    // Lock the cube until we are done.
+    cube->lock()->lockForWrite();
+
+    // Watch for the future
+    connect(&m_watcher, SIGNAL(finished()), this, SLOT(calculationComplete()));
+
+    // The main part of the mapped reduced function...
+    m_future = QtConcurrent::map(m_slaterShells, SlaterSet::processDensity);
+    // Connect our watcher to our future
+    m_watcher.setFuture(m_future);
+
+    return true;
+}
 
 
 bool SlaterSet::calculateCubeDensity(Cube *cube)

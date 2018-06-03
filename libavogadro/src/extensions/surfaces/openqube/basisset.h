@@ -163,7 +163,17 @@ public:
    * @sa blockingCalculateCubeDensity
    * @return True if the calculation was successful.
    */
-    virtual bool calculateCubeSpinDensity(Cube *cube) = 0;
+  virtual bool calculateCubeSpinDensity(Cube *cube) = 0;
+
+    /**
+   * Calculate the fractional occupation density over the entire range of the supplied Cube.
+   * @param cube The cube to write the values of the MO into.
+   * @note This function starts a threaded calculation. Use watcher() to
+   * monitor progress.
+   * @sa blockingCalculateCubeDensity
+   * @return True if the calculation was successful.
+   */
+  virtual bool calculateCubeFODensity(Cube *cube) = 0;
   /**
    * Calculate the electron density over the entire range of the supplied Cube.
    * @param cube The cube to write the values of the MO into.
@@ -173,12 +183,20 @@ public:
   virtual bool blockingCalculateCubeDensity(Cube *cube);
 
   /**
-  * Calculate the electron density over the entire range of the supplied Cube.
+  * Calculate the spin density over the entire range of the supplied Cube.
   * @param cube The cube to write the values of the MO into.
   * @sa calculateCubeDensity
   * @return True if the calculation was successful.
   */
   virtual bool blockingCalculateCubeSpinDensity(Cube *cube);
+
+    /**
+  * Calculate the fractional occupation density over the entire range of the supplied Cube.
+  * @param cube The cube to write the values of the MO into.
+  * @sa calculateCubeDensity
+  * @return True if the calculation was successful.
+  */
+    virtual bool blockingCalculateCubeFOD(Cube *cube);
 
     /**
    * When performing a calculation the QFutureWatcher is useful if you want

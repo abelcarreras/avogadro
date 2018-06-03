@@ -120,6 +120,11 @@ public:
   bool setSpinDensityMatrix(const Eigen::MatrixXd &m);
 
   /**
+   * Set the Fractional occupation density matrix for the GaussianSet.
+   */
+  bool setFODMatrix(const Eigen::MatrixXd &m);
+
+  /**
    * Debug routine, outputs all of the data in the GaussianSet.
    */
   void outputAll();
@@ -166,7 +171,17 @@ public:
    */
   bool calculateCubeSpinDensity(Cube *cube);
 
-  /**
+    /**
+   * Calculate the fractional occupation density over the entire range of the supplied Cube.
+   * @param cube The cube to write the values of the MO into.
+   * @note This function starts a threaded calculation. Use watcher()
+   * to monitor progress.
+   * @sa blockingCalculateCubeDensity
+   * @return True if the calculation was successful.
+   */
+   bool calculateCubeFODensity(Cube *cube);
+
+    /**
    * When performing a calculation the QFutureWatcher is useful if you want
    * to update a progress bar.
    */
@@ -202,6 +217,7 @@ private:
   Eigen::MatrixXd m_moMatrix;              //! MO coefficient matrix
   Eigen::MatrixXd m_density;               //! Density matrix
   Eigen::MatrixXd m_sdensity;              //! Spin Density matrix
+  Eigen::MatrixXd m_foddensity;            //! Fractional occupation density matrix
 
   unsigned int m_numMOs;    //! The number of GTOs
   unsigned int m_numAtoms;  //! Total number of atoms in the basis set
@@ -223,8 +239,8 @@ private:
   static void processPoint(GaussianShell &shell);
   static void processDensity(GaussianShell &shell);
   static void processSpinDensity(GaussianShell &shell);
-
-    static double pointS(GaussianSet *set, unsigned int moIndex,
+  static void processFODensity(GaussianShell &shell);
+  static double pointS(GaussianSet *set, unsigned int moIndex,
                        double dr2, unsigned int indexMO);
   static double pointP(GaussianSet *set, unsigned int moIndex,
                        const Eigen::Vector3d &delta,

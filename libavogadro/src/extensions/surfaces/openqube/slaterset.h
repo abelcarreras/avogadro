@@ -130,6 +130,7 @@ public:
 
   bool calculateCubeDensity(Cube *cube);
   bool calculateCubeSpinDensity(Cube *cube);
+  bool calculateCubeFODensity(Cube *cube);
   QFutureWatcher<void> & watcher() { return m_watcher; }
 
   /**

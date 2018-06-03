@@ -120,6 +120,9 @@ int main(int argc, char *argv[])
     case 2:
       m_basis->blockingCalculateCubeSpinDensity(m_qube);
       break;
+    case 5:
+      m_basis->blockingCalculateCubeFOD(m_qube);
+      break;
     /*case 3:
       m_basis->blockingCalculateCubeAlphaMO(m_qube,orbID);
       break;

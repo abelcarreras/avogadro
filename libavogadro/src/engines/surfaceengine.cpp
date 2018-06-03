@@ -253,6 +253,12 @@ namespace Avogadro {
           m_settingsWidget->orbital1Combo->addItem(comboText.arg(mesh->isoValue()));
           m_meshes.push_back(mesh->id());
       }
+      else if (cubeType == Cube::FracOcupDensity) {
+          comboText = tr("Fractional occupation density, isosurface = %L1",
+                         "Fractional occupation density isosurface with a cutoff of %1");
+          m_settingsWidget->orbital1Combo->addItem(comboText.arg(mesh->isoValue()));
+          m_meshes.push_back(mesh->id());
+      }
       else if (cubeType == Cube::MO) {
         if (mesh->isoValue() > 0.0) {
           comboText = tr("%1, isosurface = %L2",

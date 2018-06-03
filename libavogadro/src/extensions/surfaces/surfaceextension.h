@@ -111,6 +111,9 @@ namespace Avogadro
     //! Calculate spin density cube
     void calculateSpinDensity(OpenQube::Cube *cube);
 
+    //! Calculate fractional occupation density cube
+    void calculateFracOccupDensity(OpenQube::Cube *cube);
+
     //! Calculate a mesh isosurface for the given cube
     void calculateMesh(Cube *cube, double isoValue);
 
