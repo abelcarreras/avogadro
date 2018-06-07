@@ -426,7 +426,6 @@ namespace Avogadro
           return;
 
       m_basis->calculateCubeFODensity(cube);
-      //m_basis->calculateCubeSpinDensity(cube);
 
       // Set up a progress dialog
       if (!m_progress) {

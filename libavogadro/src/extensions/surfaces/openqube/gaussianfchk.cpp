@@ -23,6 +23,7 @@
 
 using Eigen::Vector3d;
 using std::vector;
+bool nato = false;
 
 namespace OpenQube
 {
@@ -102,16 +103,25 @@ void GaussianFchk::processLine()
     qDebug() << "MO energies, n =" << m_orbitalEnergy.size();
   }
   //else if (key == "Alpha NATO coefficients") {
-  else if (key == "Alpha MO coefficients") {
+  else if (key == "Alpha MO coefficients" && not nato) {
     m_MOcoeffs = readArrayD(list.at(2).toInt(), 16);
     if (static_cast<int>(m_MOcoeffs.size()) == list.at(2).toInt())
       qDebug() << "MO coefficients, n =" << m_MOcoeffs.size();
     else
       qDebug() << "Error, MO coefficients, n =" << m_MOcoeffs.size();
   }
+  else if (key == "Alpha NATO coefficients") {
+      m_MOcoeffs = readArrayD(list.at(2).toInt(), 16);
+      if (static_cast<int>(m_MOcoeffs.size()) == list.at(2).toInt()) {
+          qDebug() << "NATO coefficients, n =" << m_MOcoeffs.size();
+          nato = true;
+      }
+      else
+          qDebug() << "Error, MO coefficients, n =" << m_MOcoeffs.size();
+  }
   else if (key == "Alpha Natural Orbital occupancies") {
       m_orbitalOccupancy = readArrayD(list.at(2).toInt(), 16);
-      qDebug() << "MO occupancy, n =" << m_orbitalOccupancy.size();
+      qDebug() << "NATO occupancy, n =" << m_orbitalOccupancy.size();
   }
   else if (key == "Total SCF Density") {
     if (readDensityMatrix(list.at(2).toInt(), 16))
@@ -229,6 +239,7 @@ void GaussianFchk::load(GaussianSet* basis)
     if (m_foddensity.rows())
       basis->setFODMatrix(m_foddensity);
   }
+  basis->setNaturalOrbitalOccupancies(m_orbitalOccupancy);
 }
 
 vector<int> GaussianFchk::readArrayI(unsigned int n)

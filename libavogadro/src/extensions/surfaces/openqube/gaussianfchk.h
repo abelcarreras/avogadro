@@ -35,6 +35,7 @@ public:
   GaussianFchk(const QString &filename, GaussianSet *basis);
   ~GaussianFchk();
   void outputAll();
+
 private:
   QIODevice *m_in;
   void processLine();

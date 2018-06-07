@@ -178,8 +178,11 @@ namespace Avogadro
         qDebug() << desc;
 
         Orbital orb;
+        // Set the NATO's occupancy instead of energy if available
+        if  (m_basis->getNaturalOrbitalOccupancies().size() > 0)
+          orb.energy = m_basis->getNaturalOrbitalOccupancies()[i];
         // Get the energy from the molecule property list, if available
-        if (static_cast<size_t>(alphaEnergies.size()) > i)
+        else if (static_cast<size_t>(alphaEnergies.size()) > i)
           orb.energy = alphaEnergies[i].toDouble();
         else
           orb.energy = 0.0;

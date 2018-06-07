@@ -49,6 +49,7 @@ public:
    * Constructor.
    */
   BasisSet() : m_electrons(0), m_valid(true) {}
+  std::vector<double> m_orbitalOccupancy;
 
   /**
    * Destructor.
@@ -65,6 +66,20 @@ public:
    * @return The number of electrons in the molecule.
    */
   unsigned int numElectrons() { return m_electrons; }
+
+  /**
+   * Set the natural orbitals occupancies.
+   * @param natural orbitals occupancies.
+   */
+  void setNaturalOrbitalOccupancies(std::vector<double> occupancies) {
+      m_orbitalOccupancy = occupancies;
+  }
+  /**
+   * @return The natural orbitals occupancies.
+   */
+  std::vector<double> getNaturalOrbitalOccupancies() {
+      return m_orbitalOccupancy;
+  }
 
   /**
    * Set the molecule for the basis set.
