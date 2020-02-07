@@ -98,9 +98,13 @@ void GaussianFchk::processLine()
     m_c = readArrayD(list.at(2).toInt(), 16);
   else if (key == "P(S=P) Contraction coefficients")
     m_csp = readArrayD(list.at(2).toInt(), 16);
+  else if (key == "Alpha Natural Orbital occupancies") {
+      m_orbitalOccupancy = readArrayD(list.at(2).toInt(), 16);
+      qDebug() << "NATO occupancy, n =" << m_orbitalOccupancy.size();
+  }
   else if (key == "Alpha Orbital Energies") {
-    m_orbitalEnergy = readArrayD(list.at(2).toInt(), 16);
-    qDebug() << "MO energies, n =" << m_orbitalEnergy.size();
+    m_orbitalOccupancy = readArrayD(list.at(2).toInt(), 16);
+    qDebug() << "MO energies2, n =" << m_orbitalOccupancy.size();
   }
   //else if (key == "Alpha NATO coefficients") {
   else if (key == "Alpha MO coefficients" && not nato) {
@@ -118,10 +122,6 @@ void GaussianFchk::processLine()
       }
       else
           qDebug() << "Error, MO coefficients, n =" << m_MOcoeffs.size();
-  }
-  else if (key == "Alpha Natural Orbital occupancies") {
-      m_orbitalOccupancy = readArrayD(list.at(2).toInt(), 16);
-      qDebug() << "NATO occupancy, n =" << m_orbitalOccupancy.size();
   }
   else if (key == "Total SCF Density") {
     if (readDensityMatrix(list.at(2).toInt(), 16))
